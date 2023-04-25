@@ -1,2 +1,6 @@
 chapter1/async_waiting/target
 chapter2/timer_future/target
+chapter3/async_await/target
+chapter9/hello/target
+final_project/client/target
+final_project/server/target
