@@ -12,6 +12,13 @@ struct Delay<T> {
 } // end struct Delay
 
 
+#[derive(Debug)]
+struct JustStruct {
+    name: String,
+    age: u8
+}
+
+
 impl<T> Delay<T> {
     fn new(value: T, delay: Duration) -> Self {
         Self {
@@ -34,7 +41,17 @@ impl<T> Future for Delay<T> {
 
 #[tokio::main]
 async fn main() {
-    let ftr: Delay<u32> = Delay::new(18, tokio::time::Duration::from_millis(4500));
+    let ftr: Delay<JustStruct> = Delay::new(JustStruct { name: "alsjfa".to_string(), age: 7 }, tokio::time::Duration::from_millis(4500));
 
-    println!("The result is: {}", ftr.await);
+    println!("The result is: {:?}", ftr.await);
+
+    let mut a: Option<JustStruct> = Some(JustStruct { name: "lasjfa".to_string(), age: 93 });
+    let mut b: JustStruct;
+
+    println!("{:?}", a);
+
+    let b = a.take().unwrap();
+
+    println!("{:?}", a);
+    println!("{:?}", b);
 } // end main()
