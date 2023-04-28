@@ -8,3 +8,4 @@ chapter2/super_simple_future/target
 chapter2/under_hood/target
 chapter6/select_tester/target
 chapter2/futures_waker/target
+chapter5/stream/target

@@ -1,35 +1,37 @@
-use std::future::Future;
-use std::sync::{Arc, Mutex};
-use std::task::{Context, Waker, Poll};
-use std::time::{Duration, Instant};
-use std::pin::Pin;
+use std::{
+    future::Future,
+    pin::Pin,
+    sync::{Arc, Mutex},
+    task::{Context, Poll, Waker},
+    time::Duration,
+};
+use futures::FutureExt;
+use tokio::time::{sleep, Sleep};
 
-struct CustomTimer {
-    dead_line: Instant,
-    waker: Arc<Mutex<Option<Waker>>>
+struct ReadyFuture {
+    // waker: Arc<Mutex<Option<Waker>>>,
+    sleep_future: Sleep,
 }
 
-impl CustomTimer {
-    fn new(delay: Duration) -> Self {
-        let dead_line: Instant = Instant::now() + delay;
-        
+impl ReadyFuture {
+    fn new(duration: Duration) -> Self {
         Self {
-            dead_line,
-            waker: Arc::new(Mutex::new(None))
+            // waker: Arc::new(Mutex::new(None)),
+            sleep_future: sleep(duration),
         }
     }
 }
 
-impl Future for CustomTimer {
+impl Future for ReadyFuture {
     type Output = ();
 
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let mut cur_waker = self.waker.lock().unwrap();
-        // Check if the object has run out of time.
-        if Instant::now() >= self.dead_line {
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        // let mut waker = self.waker.lock().unwrap();
+
+        if self.sleep_future.poll_unpin(cx).is_ready() {
             Poll::Ready(())
         } else {
-            *cur_waker = Some(cx.waker().clone());
+            // *waker = Some(cx.waker().clone());
             Poll::Pending
         }
     }
@@ -37,8 +39,8 @@ impl Future for CustomTimer {
 
 #[tokio::main]
 async fn main() {
-    let timer: CustomTimer = CustomTimer::new(Duration::from_millis(3));
-    println!("The timer is started!");
-    timer.await;
-    println!("Beep Beep!");
-} // end main()
+    let ready_future = ReadyFuture::new(Duration::from_millis(500));
+    println!("Before await");
+    ready_future.await;
+    println!("After await");
+}
